@@ -1,6 +1,6 @@
-# Projet de Conception Logicielle - Modélisation UML
+# DEVIFY
 
-Projet académique de conception et modélisation d'une application suivant l'architecture MVC.
+DEVIFY est un projet académique de conception et de modélisation UML d'une plateforme de validation collaborative de pull requests, gamifiée, suivant l'architecture MVC. Le dépôt rassemble les diagrammes, la documentation d'architecture et les livrables de conception du projet.
 
 ## 📋 Structure du projet
 
