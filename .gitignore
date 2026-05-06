@@ -38,3 +38,6 @@ __pycache__/
 *.exe
 *.out
 *.app
+
+# Project-specific
+ressources/
