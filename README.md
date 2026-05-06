@@ -56,5 +56,5 @@ Ce projet est un travail académique de modélisation logicielle dans le cadre d
 Le dossier `ressources/` est ignoré par Git pour garder les fichiers locaux hors du dépôt.
 
 ## Equipe Projet
-Mseddi Abdelaziz - Barkati Mohamed Amine - Ayari Adem
+Mseddi Abdelaziz - Barkati Mohamed Amine - Ayari Adem - Jani Raed
 ---
