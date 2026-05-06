@@ -1,0 +1,44 @@
+@startuml
+title Diagramme de composants — Intégrations externes
+
+skinparam componentStyle uml2
+skinparam backgroundColor white
+package "Controller" #LightGreen {
+  component [SynchronisationController] as SYNC_C
+  component [AuthentificationController] as AUTH_C
+  component [NotificationController] as NOTIF_C
+}
+
+cloud "Dépôts externes\n(GitHub, GitLab, Bitbucket)" as EXT
+
+node "Email Provider" as MAIL_NODE {
+  component [MailServer] as MAIL
+}
+
+' === Synchro → Dépôts (API REST) ===
+EXT -down- IRestAPI : <<HTTPS>>
+SYNC_C -up-( IRestAPI
+
+' === Auth → Dépôts (OAuth) ===
+EXT -down- IOAuth : <<HTTPS>>
+AUTH_C -up-( IOAuth
+
+' === Notification → Email (connexion courte et directe) ===
+NOTIF_C -down-( ISMTP
+MAIL -up- ISMTP : <<SMTP>>
+
+note top of EXT
+  Chaque dépôt offre deux interfaces :
+  • API REST : synchronisation des PRs
+    et notification des décisions
+  • OAuth : authentification et
+    liaison des comptes externes
+end note
+
+note bottom of NOTIF_C
+  Envoie des emails pour :
+  • demande de revue (au reviewer)
+  • décision finale (au propriétaire de la PR)
+end note
+
+@enduml

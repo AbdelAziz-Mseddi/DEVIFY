@@ -1,0 +1,356 @@
+@startuml AlgorithmeAttribution
+title Diagramme d'activité — Algorithme d'attribution des Reviewers
+
+start
+
+:Recevoir la PullRequest pour revue;
+
+:Récupérer les paramètres de l'algorithme
+(AlgorithmParameters: w1, w2, w3, w4);
+
+:Récupérer la liste des Reviewers disponibles
+(findAvailableReviewers());
+
+if (Liste vide ?) then (oui)
+  :Afficher message
+  "Aucun reviewer disponible";
+  stop
+else (non)
+endif
+
+:Initialiser liste scorée vide;
+
+while (Pour chaque ReviewerAccount) is (reviewer suivant)
+
+  fork
+    :Récupérer charge de travail actuelle
+    (countActiveReviewsByReviewer());
+  fork again
+    :Récupérer nombre de revues complétées
+    (countCompletedReviewsByReviewer());
+  fork again
+    :Récupérer points et badges
+    du DeveloperAccount;
+  fork again
+    :Récupérer rating
+    du ReviewerAccount;
+  end fork
+
+  :Calculer le score pondéré :
+  score = (1/charge) × w1
+        + rating × w2
+        + points × w3
+        + nbrBadges × w4;
+
+  :Ajouter (reviewer, score)
+  à la liste scorée;
+
+endwhile (aucun reviewer restant)
+
+:Trier la liste scorée
+par score décroissant;
+
+if (Nombre de reviewers ≥ 5 ?) then (oui)
+  :Retourner les 5 premiers;
+else (non)
+  :Retourner tous les
+  reviewers disponibles;
+endif
+
+stop
+
+@enduml
+
+
+' ============================================================
+
+
+@startuml CycleDeViepr
+title Diagramme d'activité — Cycle de vie complet d'une Pull Request
+
+|Développeur|
+start
+
+:Créer une Pull Request
+sur le dépôt externe;
+
+|Système|
+:Synchroniser les PRs
+(SynchronisationController);
+
+|#LightBlue|Dépôt externe|
+:Récupérer les données de la PR
+via API (GitHub/GitLab/Bitbucket);
+
+|Système|
+:Sauvegarder la PR en base
+(status: **open**);
+
+|Développeur|
+:Consulter la liste des PRs;
+
+:Cliquer sur une PR pour
+revendiquer une revue;
+
+|Système|
+:Exécuter l'algorithme d'attribution
+(AttributionController.suggestReviewers());
+
+:Retourner les 5 meilleurs
+Reviewers triés par score;
+
+|Développeur|
+:Sélectionner un ou
+plusieurs Reviewer(s);
+
+:Confirmer la demande de revue;
+
+|Système|
+:Créer les Reviews
+(status: **pendingReview**);
+
+while (Pour chaque Reviewer sélectionné) is (suivant)
+  :Envoyer notification
+  par email (NotificationController);
+endwhile (tous notifiés)
+
+|Reviewer|
+:Recevoir la notification
+de demande de revue;
+
+if (Accepter la revue ?) then (oui)
+  :Mettre Review.status =
+  **acceptedForReview**;
+else (non)
+  :Mettre Review.status =
+  **rejectedForReview**;
+  |Système|
+  :Notifier le Développeur
+  du refus;
+  |Développeur|
+  :Choisir un autre Reviewer
+  ou attendre;
+  stop
+endif
+
+|Reviewer|
+:Lire le code de la PR;
+
+:Rédiger un commentaire
+détaillé;
+
+:Soumettre la revue
+(status: **completedReview**);
+
+|Système|
+:Attribuer des points au Reviewer
+(GamificationController.awardPoints
+("review_submitted"));
+
+|Reviewer|
+if (Prêt à finaliser la PR ?) then (non)
+  :Fin de la revue
+  (la PR reste **open**);
+  stop
+else (oui)
+endif
+
+if (Décision ?) then (Approuver)
+
+  |Système|
+
+  fork
+    :Mettre PR.status = **approved**;
+    :Mettre PR.closedAt = now();
+  fork again
+    :Notifier le dépôt externe
+    (SynchronisationController);
+  fork again
+    :Attribuer points au Reviewer
+    ("pr_approved");
+    :Attribuer points au Développeur
+    ("pr_approved");
+    :Vérifier conditions de badges;
+  fork again
+    :Notifier le Développeur
+    par email;
+  end fork
+
+  |#LightBlue|Dépôt externe|
+  :Mettre à jour le statut
+  de la PR (merge/close);
+
+  |Développeur|
+  :Recevoir notification
+  "PR approuvée";
+
+else (Rejeter)
+
+  |Système|
+
+  fork
+    :Mettre PR.status = **rejected**;
+    :Mettre PR.closedAt = now();
+  fork again
+    :Notifier le dépôt externe
+    (SynchronisationController);
+  fork again
+    :Attribuer points au Reviewer
+    ("pr_rejected");
+    :Vérifier conditions de badges;
+  fork again
+    :Notifier le Développeur
+    par email;
+  end fork
+
+  |#LightBlue|Dépôt externe|
+  :Mettre à jour le statut
+  de la PR (close);
+
+  |Développeur|
+  :Recevoir notification
+  "PR rejetée";
+
+endif
+
+stop
+
+@enduml
+
+
+' ============================================================
+
+
+@startuml Authentification
+title Diagramme d'activité — S'authentifier (Login / SignUp)
+
+start
+
+if (L'utilisateur a déjà un compte ?) then (Oui — Login)
+
+  :Saisir email et mot de passe;
+
+  :Vérifier les champs
+  (LoginGUI.verifyInput());
+
+  if (Champs valides ?) then (non)
+    :Afficher erreur de saisie;
+    stop
+  else (oui)
+  endif
+
+  :Appeler AuthentificationController
+  .login(email, password);
+
+  :Vérifier existence du compte
+  (AccountRepository.exists());
+
+  if (Compte existe ?) then (non)
+    :Afficher erreur
+    "Compte inexistant";
+    stop
+  else (oui)
+  endif
+
+  :Vérifier identifiants
+  (verifyCredentials());
+
+  :Comparer le mot de passe
+  avec le hash en base;
+
+  if (Identifiants valides ?) then (non)
+    :Afficher erreur
+    "Email ou mot de passe incorrect";
+    stop
+  else (oui)
+  endif
+
+  if (Rôle de l'utilisateur ?) then (Admin)
+    :Rediriger vers
+    AdminDashboardGUI;
+  else (Développeur / Reviewer)
+    :Rediriger vers
+    DashboardGUI;
+  endif
+
+else (Non — SignUp)
+
+  :Saisir les informations du profil
+  (nom, prénom, pseudo);
+
+  :Saisir l'adresse email;
+
+  :Vérifier les champs
+  (SignUpGUI.verifyInput());
+
+  if (Champs valides ?) then (non)
+    :Afficher erreur de saisie;
+    stop
+  else (oui)
+  endif
+
+  :Vérifier si l'email existe déjà
+  (AccountRepository.findByEmail());
+
+  if (Email déjà utilisé ?) then (oui)
+    :Afficher erreur
+    "Email déjà enregistré";
+    stop
+  else (non)
+  endif
+
+  :Rediriger vers la plateforme
+  externe pour OAuth;
+
+  repeat
+
+    :Choisir une plateforme
+    (GitHub / GitLab / Bitbucket);
+
+    :Rediriger vers l'authentification
+    OAuth de la plateforme
+    (SignUpGUI.externalAuthRedirect());
+
+    :La plateforme externe
+    traite l'authentification;
+
+    if (Authentification OAuth réussie ?) then (non)
+      :Afficher erreur
+      "Échec de connexion externe";
+
+      if (Réessayer ?) then (oui)
+      else (non)
+        stop
+      endif
+
+    else (oui)
+      :Lier le compte externe
+      (AuthentificationController
+      .linkExternalAccount());
+
+      :Sauvegarder le lien
+      (DeveloperAccountRepository
+      .addExternalAccountLink());
+    endif
+
+  repeat while (Ajouter un autre\ncompte externe ?) is (oui)
+  -> non;
+
+  :Créer le compte DeveloperAccount
+  (AuthentificationController.signUp());
+
+  :Sauvegarder en base
+  (DeveloperAccountRepository.create());
+
+  :Synchroniser les PRs depuis
+  les comptes liés
+  (SynchronisationController
+  .synchronizePRs());
+
+  :Rediriger vers DashboardGUI;
+
+endif
+
+stop
+
+@enduml

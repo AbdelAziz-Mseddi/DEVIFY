@@ -1,0 +1,61 @@
+@startuml
+title Diagramme de composants — Repository → Base de données
+
+skinparam componentStyle uml2
+skinparam backgroundColor white
+
+package "Repository" as PKG_REPO #Khaki {
+  component [AccountRepository] as ACC_R
+  component [DeveloperAccountRepository] as DEV_R
+  component [ReviewerAccountRepository] as REVA_R
+  component [AdminRepository] as ADMIN_R
+  component [PullRequestRepository] as PR_R
+  component [ReviewRepository] as REV_R
+  component [AssignAlgorithmRepository] as ALGO_R
+}
+
+database "Base de données" as DB {
+  component [Table: Account] as T_ACC
+  component [Table: DeveloperAccount] as T_DEV
+  component [Table: ReviewerAccount] as T_REVA
+  component [Table: AdminAccount] as T_ADMIN
+  component [Table: PullRequest] as T_PR
+  component [Table: Review] as T_REV
+  component [Table: AlgorithmParameters] as T_ALGO
+}
+
+' === Chaque Repository accède à sa table ===
+T_ACC -up- IACC
+ACC_R -down-( IACC
+
+T_DEV -up- IDEV
+DEV_R -down-( IDEV
+
+T_REVA -up- IREVA
+REVA_R -down-( IREVA
+
+T_ADMIN -up- IADMIN
+ADMIN_R -down-( IADMIN
+
+T_PR -up- IPR
+PR_R -down-( IPR
+
+T_REV -up- IREV
+REV_R -down-( IREV
+
+T_ALGO -up- IALGO
+ALGO_R -down-( IALGO
+
+note bottom of DB
+  Chaque Repository accède
+  exclusivement à sa table
+  correspondante via SQL/ORM.
+  
+  Note : Au niveau de la BD,
+  Account / DeveloperAccount /
+  ReviewerAccount / AdminAccount
+  sont dans une seule table avec
+  une colonne "Role".
+end note
+
+@enduml

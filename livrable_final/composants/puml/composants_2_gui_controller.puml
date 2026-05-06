@@ -1,0 +1,65 @@
+@startuml
+title Diagramme de composants — Interface (GUI) → Controller
+
+skinparam componentStyle uml2
+skinparam backgroundColor white
+
+package "Interface (GUI)" as PKG_GUI #LightBlue {
+  component [LoginGUI] as LOGIN
+  component [SignUpGUI] as SIGNUP
+  component [DashboardGUI] as DASH
+  component [ProfileGUI] as PROF
+  component [AdminDashboardGUI] as ADASH
+  component [AdminProfileGUI] as APROF
+  component [PullRequestGUI] as PRGUI
+  component [ReviewerPullRequestGUI] as RPRGUI
+  component [ReviewerReviewGUI] as RRGUI
+  component [ReviewGUI] as REVGUI
+  component [FinalizePullRequestGUI] as FPRGUI
+}
+
+package "Controller" as PKG_CTRL #LightGreen {
+  component [AuthentificationController] as AUTH_C
+  component [DashboardController] as DASH_C
+  component [AdministrationController] as ADMIN_C
+  component [PullRequestController] as PR_C
+  component [AttributionController] as ATTR_C
+  component [ReviewController] as REV_C
+  component [GamificationController] as GAM_C
+}
+
+' === Authentification ===
+AUTH_C -up- IAuth
+LOGIN -down-( IAuth
+SIGNUP -down-( IAuth
+
+' === Dashboard ===
+DASH_C -up- IDash
+DASH -down-( IDash
+PROF -down-( IDash
+
+' === Administration ===
+ADMIN_C -up- IAdmin
+ADASH -down-( IAdmin
+APROF -down-( IAdmin
+
+' === PullRequest ===
+PR_C -up- IPR
+PRGUI -down-( IPR
+FPRGUI -down-( IPR
+
+' === Attribution ===
+ATTR_C -up- IAttrib
+PRGUI -down-( IAttrib
+
+' === Review ===
+REV_C -up- IReview
+RPRGUI -down-( IReview
+RRGUI -down-( IReview
+REVGUI -down-( IReview
+
+' === Gamification ===
+GAM_C -up- IGam
+PROF -down-( IGam
+
+@enduml

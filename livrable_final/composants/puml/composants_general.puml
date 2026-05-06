@@ -1,0 +1,156 @@
+@startuml
+title Diagramme de composants — Vue générale
+
+skinparam componentStyle uml2
+skinparam backgroundColor white
+skinparam packageBorderColor #555555
+skinparam packageFontSize 14
+
+' ============================================================
+' COUCHE INTERFACE (GUI)
+' ============================================================
+package "Interface (GUI)" as PKG_GUI #LightSkyBlue {
+  component [LoginGUI] as LOGIN
+  component [SignUpGUI] as SIGNUP
+  component [DashboardGUI] as DASH
+  component [ProfileGUI] as PROF
+  component [PullRequestGUI] as PRGUI
+  component [ReviewGUI] as REVGUI
+  component [ReviewerReviewGUI] as RRGUI
+  component [ReviewerPullRequestGUI] as RPRGUI
+  component [FinalizePullRequestGUI] as FPRGUI
+  component [AdminDashboardGUI] as ADASH
+  component [AdminProfileGUI] as APROF
+}
+
+' ============================================================
+' COUCHE CONTROLLER
+' ============================================================
+package "Controller" as PKG_CTRL #LightGreen {
+  component [AuthentificationController] as AUTH_C
+  component [DashboardController] as DASH_C
+  component [PullRequestController] as PR_C
+  component [AttributionController] as ATTR_C
+  component [ReviewController] as REV_C
+  component [GamificationController] as GAM_C
+  component [AdministrationController] as ADMIN_C
+  component [SynchronisationController] as SYNC_C
+  component [NotificationController] as NOTIF_C
+}
+
+' ============================================================
+' COUCHE REPOSITORY
+' ============================================================
+package "Repository" as PKG_REPO #Khaki {
+  component [AccountRepository] as ACC_R
+  component [DeveloperAccountRepository] as DEV_R
+  component [ReviewerAccountRepository] as REVA_R
+  component [AdminRepository] as ADMIN_R
+  component [PullRequestRepository] as PR_R
+  component [ReviewRepository] as REV_R
+  component [AssignAlgorithmRepository] as ALGO_R
+}
+
+' ============================================================
+' BASE DE DONNÉES
+' ============================================================
+database "Base de données" as DB
+
+' ============================================================
+' SYSTÈMES EXTERNES
+' ============================================================
+cloud "Dépôts externes\n(GitHub, GitLab, Bitbucket)" as EXT
+
+node "Email Provider" {
+  component [MailServer] as MAIL
+}
+
+' ============================================================
+' CONNEXIONS GUI → CONTROLLER
+' ============================================================
+AUTH_C -up- IAuth
+LOGIN -down-( IAuth
+SIGNUP -down-( IAuth
+
+DASH_C -up- IDash
+DASH -down-( IDash
+PROF -down-( IDash
+
+PR_C -up- IPR
+PRGUI -down-( IPR
+FPRGUI -down-( IPR
+
+ATTR_C -up- IAttrib
+PRGUI -down-( IAttrib
+
+REV_C -up- IReview
+RPRGUI -down-( IReview
+RRGUI -down-( IReview
+REVGUI -down-( IReview
+
+GAM_C -up- IGam
+PROF -down-( IGam
+
+ADMIN_C -up- IAdmin
+ADASH -down-( IAdmin
+APROF -down-( IAdmin
+
+' ============================================================
+' CONNEXIONS CONTROLLER → REPOSITORY
+' ============================================================
+ACC_R -up- IFindAcc
+AUTH_C -down-( IFindAcc
+DASH_C -down-( IFindAcc
+
+DEV_R -up- IDevAcc
+AUTH_C -down-( IDevAcc
+GAM_C -down-( IDevAcc
+ADMIN_C -down-( IDevAcc
+
+REVA_R -up- IRevAcc
+ATTR_C -down-( IRevAcc
+GAM_C -down-( IRevAcc
+REV_C -down-( IRevAcc
+
+ADMIN_R -up- IAdmRepo
+ADMIN_C -down-( IAdmRepo
+
+PR_R -up- IPRRepo
+PR_C -down-( IPRRepo
+SYNC_C -down-( IPRRepo
+DASH_C -down-( IPRRepo
+
+REV_R -up- IRevRepo
+REV_C -down-( IRevRepo
+PR_C -down-( IRevRepo
+ATTR_C -down-( IRevRepo
+
+ALGO_R -up- IAlgRepo
+ATTR_C -down-( IAlgRepo
+ADMIN_C -down-( IAlgRepo
+
+' ============================================================
+' CONNEXIONS REPOSITORY → BASE DE DONNÉES
+' ============================================================
+DB -up- IDatabase
+ACC_R -down-( IDatabase
+DEV_R -down-( IDatabase
+REVA_R -down-( IDatabase
+ADMIN_R -down-( IDatabase
+PR_R -down-( IDatabase
+REV_R -down-( IDatabase
+ALGO_R -down-( IDatabase
+
+' ============================================================
+' CONNEXIONS CONTROLLER → SYSTÈMES EXTERNES
+' ============================================================
+EXT -down- IRestAPI : <<HTTPS>>
+SYNC_C -up-( IRestAPI
+
+EXT -down- IOAuth : <<HTTPS>>
+AUTH_C -up-( IOAuth
+
+NOTIF_C -down-( ISMTP
+MAIL -up- ISMTP : <<SMTP>>
+
+@enduml

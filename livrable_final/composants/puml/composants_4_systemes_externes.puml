@@ -1,0 +1,86 @@
+@startuml
+title Diagramme de composants — Systèmes externes
+
+skinparam componentStyle uml2
+skinparam backgroundColor white
+
+package "Controller" as PKG_CTRL #LightGreen {
+  component [SynchronisationController] as SYNC_C
+  component [NotificationController] as NOTIF_C
+  component [AuthentificationController] as AUTH_C
+}
+
+package "Repository" as PKG_REPO #Khaki {
+  component [AccountRepository] as ACC_R
+  component [DeveloperAccountRepository] as DEV_R
+  component [ReviewerAccountRepository] as REVA_R
+  component [AdminRepository] as ADMIN_R
+  component [PullRequestRepository] as PR_R
+  component [ReviewRepository] as REV_R
+  component [AssignAlgorithmRepository] as ALGO_R
+}
+
+cloud "Dépôts externes" as EXT {
+  component [GitHub] as GH
+  component [GitLab] as GL
+  component [Bitbucket] as BB
+}
+
+node "Email Provider" as MAIL_NODE {
+  component [MailServer] as MAIL
+}
+
+database "Base de données" as DB
+
+' === Synchronisation → Dépôts externes ===
+GH -left- IGitHub
+SYNC_C -right-( IGitHub
+
+GL -left- IGitLab
+SYNC_C -right-( IGitLab
+
+BB -left- IBitbucket
+SYNC_C -right-( IBitbucket
+
+' === Authentification → OAuth externe ===
+GH -- IOAuthGH
+AUTH_C -( IOAuthGH
+
+GL -- IOAuthGL
+AUTH_C -( IOAuthGL
+
+BB -- IOAuthBB
+AUTH_C -( IOAuthBB
+
+' === Notification → Email ===
+MAIL -left- ISMTP
+NOTIF_C -right-( ISMTP
+
+' === Repository → Base de données ===
+DB -up- IDB_ACC
+DB -- IDB_DEV
+DB -- IDB_REVA
+DB -- IDB_ADMIN
+DB -- IDB_PR
+DB -- IDB_REV
+DB -- IDB_ALGO
+
+ACC_R -down-( IDB_ACC
+DEV_R -down-( IDB_DEV
+REVA_R -down-( IDB_REVA
+ADMIN_R -down-( IDB_ADMIN
+PR_R -down-( IDB_PR
+REV_R -down-( IDB_REV
+ALGO_R -down-( IDB_ALGO
+
+note right of EXT
+  Communication via
+  API REST (HTTPS)
+end note
+
+note right of MAIL_NODE
+  Communication via
+  protocole SMTP
+end note
+
+@enduml

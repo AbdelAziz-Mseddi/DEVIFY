@@ -1,0 +1,67 @@
+@startuml
+title Diagramme de composants — Controller → Repository
+
+skinparam componentStyle uml2
+skinparam backgroundColor white
+
+package "Controller" as PKG_CTRL #LightGreen {
+  component [AuthentificationController] as AUTH_C
+  component [DashboardController] as DASH_C
+  component [AdministrationController] as ADMIN_C
+  component [PullRequestController] as PR_C
+  component [AttributionController] as ATTR_C
+  component [ReviewController] as REV_C
+  component [GamificationController] as GAM_C
+  component [SynchronisationController] as SYNC_C
+  component [NotificationController] as NOTIF_C
+}
+
+package "Repository" as PKG_REPO #Khaki {
+  component [AccountRepository] as ACC_R
+  component [DeveloperAccountRepository] as DEV_R
+  component [ReviewerAccountRepository] as REVA_R
+  component [AdminRepository] as ADMIN_R
+  component [PullRequestRepository] as PR_R
+  component [ReviewRepository] as REV_R
+  component [AssignAlgorithmRepository] as ALGO_R
+}
+
+' === AccountRepository ===
+ACC_R -up- IFindAccount
+AUTH_C -down-( IFindAccount
+DASH_C -down-( IFindAccount
+
+' === DeveloperAccountRepository ===
+DEV_R -up- IDevAccount
+AUTH_C -down-( IDevAccount
+GAM_C -down-( IDevAccount
+ADMIN_C -down-( IDevAccount
+
+' === ReviewerAccountRepository ===
+REVA_R -up- IRevAccount
+ATTR_C -down-( IRevAccount
+GAM_C -down-( IRevAccount
+REV_C -down-( IRevAccount
+
+' === AdminRepository ===
+ADMIN_R -up- IAdminRepo
+ADMIN_C -down-( IAdminRepo
+
+' === PullRequestRepository ===
+PR_R -up- IPRRepo
+PR_C -down-( IPRRepo
+SYNC_C -down-( IPRRepo
+DASH_C -down-( IPRRepo
+
+' === ReviewRepository ===
+REV_R -up- IRevRepo
+REV_C -down-( IRevRepo
+PR_C -down-( IRevRepo
+ATTR_C -down-( IRevRepo
+
+' === AssignAlgorithmRepository ===
+ALGO_R -up- IAlgoRepo
+ATTR_C -down-( IAlgoRepo
+ADMIN_C -down-( IAlgoRepo
+
+@enduml

@@ -1,0 +1,40 @@
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# Build artifacts
+dist/
+build/
+*.class
+*.jar
+
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+
+# OS specific
+.AppleDouble
+.LSOverride
+
+# Files that might be sensitive or too large
+*.exe
+*.out
+*.app

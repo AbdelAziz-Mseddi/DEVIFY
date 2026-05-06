@@ -1,0 +1,62 @@
+@startuml
+title Diagramme de composants — Vue d'ensemble
+
+skinparam componentStyle uml2
+skinparam backgroundColor white
+
+package "Système gamifié de revue de PRs" {
+
+  component [Interface\n(GUI)] as GUI #LightSkyBlue
+  component [Controller] as CTRL #LightGreen
+  component [Repository] as REPO #Khaki
+  component [Entity] as ENT #LightCoral
+
+}
+
+database "Base de données" as DB
+cloud "Dépôts externes" as EXT {
+  component [GitHub] as GH
+  component [GitLab] as GL
+  component [Bitbucket] as BB
+}
+node "Email Provider" as MAIL
+
+GUI -down-( IController
+CTRL -up- IController
+
+CTRL -down-( IRepository
+REPO -up- IRepository
+
+REPO -down-( IEntity
+ENT -up- IEntity
+
+REPO -right-( IDatabase
+DB -left- IDatabase
+
+CTRL -right-( IExternalAPI
+EXT -left- IExternalAPI
+
+CTRL -( IEmail
+MAIL -- IEmail
+
+note bottom of GUI
+  11 classes d'interface
+  (LoginGUI, DashboardGUI, ...)
+end note
+
+note bottom of CTRL
+  9 contrôleurs
+  (ReviewController, ...)
+end note
+
+note bottom of REPO
+  7 repositories
+  (ReviewRepository, ...)
+end note
+
+note bottom of ENT
+  6 entités métier
+  (PullRequest, Review, ...)
+end note
+
+@enduml
